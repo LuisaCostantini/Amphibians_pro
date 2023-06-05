@@ -10,7 +10,6 @@
 library(GGally)
 library(tidyverse)
 library(readxl)
-library(patchwork)
 
 #1 DATASET----
 #Il dataset è stato preso da Kaggle : https://www.kaggle.com/datasets/ishandutta/amphibians-data-set
@@ -34,11 +33,12 @@ names(dataset_amph)
 
 glimpse(dataset_amph)
 
+#Di seguito sono elencate le categorie per ogni cariabile:
 #Nella prima colonna ci sono le osservazioni, 
 #la seconda colonna è il tipo di strada/autostrada (fondamentale per la nostra analisi e che presenta due categorie, A1 ed S52),
 #la terza colonna rappresenta la superficie dei serbatoi in m2, ci sarà molto utile per la nostra analisi,
-#la quarta colonna è il numero di serbatoi/habitat e maggiore è il numero di serbatoi, 
-#più è probabile che alcuni di essi siano adatti alla riproduzione di anfibi.
+#la quarta colonna è il numero di serbatoi/habitat, e maggiore è il numero di serbatoi, 
+#più è probabile che ce ne siano di adatti alla riproduzione di anfibi all'interno di un determinato habitat.
 #Nella quinta colonna sono presenti i tipi di serbatoi (serbatoi naturali, fossi, 
 #prati umidi/paludi, valli fluviali,piccoli corsi d'acuqa, invasi di recente formazione non sottoposti a naturalizzazione,
 #serbatoi d'acuqa tecnologica, giardini/serbatoi d'acqua in orti),
@@ -59,7 +59,7 @@ glimpse(dataset_amph)
 #Fire-bellied toad = Ululone dal ventre rosso,
 #Tree frog = Raganella, 
 #Common newt = Tritone comune, 
-#Great crested newt = Tritone crestato maggiore. 
+#Great crested newt = Tritone crestato maggiore.
 
 
 #2 DATA CLEANING----
@@ -178,14 +178,8 @@ nomi <- c("green_frogs",
           "great_crested_newt")
 df_secondario <- data.frame(occorrenza=valori, specie=nomi)
 
-rlang::last_trace(NULL)
-rlang::last_trace(drop = FALSE)
-
-data_bar <- df_secondario$occorrenza
-names(data_bar) <- df_secondario$specie
-data_bar
-
-specie_occorrenza <- ggplot() +  barplot(data_bar)
+specie_occorrenza <- ggplot(df_secondario, aes(x=specie, y=occorrenza)) + 
+  geom_bar(stat = "identity")
 
 specie_occorrenza
 
@@ -204,12 +198,13 @@ n_specie_autostrada
 #nella distribuzione dei dati relativa a A1 : 
 #il primo quantile è 1,
 #la mediana è 2, 
-#il terzo quantile è 3. 
+#il terzo quantile è 3,
+#la distribuzione massima (scala) è 6. 
 #invece nella distribuzione dei dati relativa a S52 : 
 #il primo quantile è 2,
 #la mediana è 3 e 
-#il terzo quantile è 5. 
-
+#il terzo quantile è 5,
+#la distribuzione massima (scala) è 7 e possiamo notare che non abbiamo outliers. 
 
 #Ora salviamo il grafico 
 pdf("n_specie_autostrada.pdf")
@@ -271,5 +266,4 @@ kruskal.test(tot_species ~ tipo_serbatoio, data = new_dataset_amph)
 
 #Concludendo da quanto osservato nelle nostre analisi; possiamo affermare che è effettivamente presente 
 # una relazione tra le componenti biotiche (specie anfibi) e abiotiche (tipologia strada, tipo di serbatoio, distanza serbatoio-strade, estensione del serbatoio).
-
 
