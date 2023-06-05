@@ -1,7 +1,3 @@
-
-
-
-
 #Biometria e Statistica Modulo 2 
 #Progetto di Luisa Costantini, Eleonora Pancaldi e Riccardo Biagini 
 
@@ -11,16 +7,17 @@
 #Abbiamo scelto questo dataset in quanto ci interesserebbe capire come varia la presenza di fattori biotici (le specie di anfibi) rispetto ad alcuni fattori abiotici (strade e serbatori).
 
 #libraries
-library(ggplot2)
 library(GGally)
 library(tidyverse)
 library(readxl)
+library(patchwork)
 
 #1 DATASET----
 #Il dataset è stato preso da Kaggle : https://www.kaggle.com/datasets/ishandutta/amphibians-data-set
 #In questo dataset abbiamo 190 righe (osservazioni) e 23 colonne (variabili)
 
-dataset_amph <- read_xlsx("data/amphibians.xlsx")
+dataset_amph <- read_xlsx("data/amphibians.xlsx", skip = 1)
+
 
 #Ispezioniamo il nostro dataset 
 view(dataset_amph)
@@ -37,17 +34,25 @@ names(dataset_amph)
 
 glimpse(dataset_amph)
 
-#Nellaprima colonna ci sono le osservazioni, la seconda colonna è il tipo di strada/autostrada (fondamentale per la nostra analisi),
-#la terza colonna rappresenta la superficie dei serbatoi ed è in m2, ci sarà molto utile per la nostra analisi,
-#la quarta colonna è il numero di serbatoi/habitat e maggiore è il numero di serbatoi, più è probabile che alcuni di essi siano adatti alla riproduzione di anfibi.
-#Nella quinta colonna sono presenti i tipi di serbatoi (invasi, bacini, stagni, valli, torrenti, paludi ecc)
-#Per quanto riguarda la sesta colonna possiamo vedere i vari utilizzi delle riserve idriche,
-#nella settima colonna abbiamo la distanza serbatoio-strade in range numerici, utile per il nostro studio in quanto ci permette di vedere come lem specie siano più o meno influenzate dalla vicinanza con le strade 
-#Nell'ottava invece, abbiamo la distanza serbatoio-edifici,
-#Stato serbatoio nella nona colonna riguarda lo stato di manutenzione dell'invaso,
+#Nella prima colonna ci sono le osservazioni, 
+#la seconda colonna è il tipo di strada/autostrada (fondamentale per la nostra analisi e che presenta due categorie, A1 ed S52),
+#la terza colonna rappresenta la superficie dei serbatoi in m2, ci sarà molto utile per la nostra analisi,
+#la quarta colonna è il numero di serbatoi/habitat e maggiore è il numero di serbatoi, 
+#più è probabile che alcuni di essi siano adatti alla riproduzione di anfibi.
+#Nella quinta colonna sono presenti i tipi di serbatoi (serbatoi naturali, fossi, 
+#prati umidi/paludi, valli fluviali,piccoli corsi d'acuqa, invasi di recente formazione non sottoposti a naturalizzazione,
+#serbatoi d'acuqa tecnologica, giardini/serbatoi d'acqua in orti),
+#Per quanto riguarda la sesta colonna possiamo vedere i diversi utilizzi delle riserve idriche (inutilizzata da umani,
+#ricreativa e scenica, uutilizzata economicamente, tecnologica),
+#nella settima colonna abbiamo la distanza serbatoio-strade espressa in mentri tramite range numerici,
+#utile per il nostro studio in quanto ci permette di vedere come le specie siano più o meno influenzate dalla vicinanza con le strade 
+#Nell'ottava invece, abbiamo la distanza serbatoio-edifici, come per la colonna 7 i dati sono espressi in metri tramite range numerici.
+#Stato serbatoio nella nona colonna riguarda lo stato di manutenzione dell'invaso (ordinato, lievemente disordinato,
+#pesantemente disordinato),
 #Nella decima abbiamo la tipologia di riva (se naturale o antropica),
 #Nelle ultime colonne (dalla 11esima alla 17esima) abbiamo in ordine le specie e in ogni colonna
 #sono presenti due valori (variabili dicotomiche) : 0 o 1 che indicano la presenza (1) o l'assenza (0) di quella determinata specie.
+#di seguito riportate le specie in ordine di apparizione nelle colonne dalla 11esmia alla 17esima
 #Green frogs = Rana verde, 
 #Brown frogs = Rana marrone,
 #Common toad = Rospo comune
@@ -83,39 +88,13 @@ glimpse(new_dataset_amph)
 
 view(new_dataset_amph)
 
-#Eliminiamo la prima riga contentente le sigle ora non più necessarie 
-new_dataset_amph <- new_dataset_amph[-1,]
- 
-#rendo numeriche le colonne dalla 11 alla fine (quelle delle specie di anfibi)
-new_dataset_amph$green_frogs <- as.numeric(new_dataset_amph$green_frogs)
-
-new_dataset_amph$brown_frogs <- as.numeric(new_dataset_amph$brown_frogs)
-
-new_dataset_amph$common_toad <- as.numeric(new_dataset_amph$common_toad)
-
-new_dataset_amph$`fire-bellied_toad` <- as.numeric(new_dataset_amph$`fire-bellied_toad`)
-
-new_dataset_amph$tree_frog <- as.numeric(new_dataset_amph$tree_frog)
-
-new_dataset_amph$common_newt <- as.numeric(new_dataset_amph$common_newt)
-
-new_dataset_amph$great_crested_newt <- as.numeric(new_dataset_amph$great_crested_newt)
-
-glimpse(new_dataset_amph)
-
-#La colonna della superficie del serbatoio idrico ora non è più un character ma è stata modificata in numeric  
-new_dataset_amph <- new_dataset_amph %>%
-  mutate(
-    estensione_serb_mq = as.numeric(estensione_serb_mq)
-  )
-glimpse(new_dataset_amph)
 
 #creiamo una nuova colonna con la somma delle specie osservate in ogni riga
 
 new_dataset_amph$tot_species <- rowSums(new_dataset_amph[,6:ncol(new_dataset_amph)])
 
 glimpse(new_dataset_amph)
- 
+
 view(new_dataset_amph)
 
 #osserviamo come cambia il numero di specie tra le 2 
@@ -191,14 +170,16 @@ gcnd %>%
 
 valori <- c(108, 148, 124, 58, 71, 58, 21)
 nomi <- c("green_frogs",
-       "brown_frogs",
-       "common_toad",
-       "fire-bellied_toad",
-       "tree_frog",
-       "common_newt",
-       "great_crested_newt")
+          "brown_frogs",
+          "common_toad",
+          "fire-bellied_toad",
+          "tree_frog",
+          "common_newt",
+          "great_crested_newt")
 df_secondario <- data.frame(occorrenza=valori, specie=nomi)
 
+rlang::last_trace(NULL)
+rlang::last_trace(drop = FALSE)
 
 data_bar <- df_secondario$occorrenza
 names(data_bar) <- df_secondario$specie
@@ -218,6 +199,17 @@ n_specie_autostrada <- ggplot() + geom_boxplot(aes(x= new_dataset_amph$motorway,
   labs(x = "Motorway",
        y = "Tot Species")
 n_specie_autostrada
+#Come possiamo vedere dal graficamente dal boxplot il totale delle specie è maggiormente distribuito nella strada S52. 
+#Possiamo inoltre ossrvare che:  
+#nella distribuzione dei dati relativa a A1 : 
+#il primo quantile è 1,
+#la mediana è 2, 
+#il terzo quantile è 3. 
+#invece nella distribuzione dei dati relativa a S52 : 
+#il primo quantile è 2,
+#la mediana è 3 e 
+#il terzo quantile è 5. 
+
 
 #Ora salviamo il grafico 
 pdf("n_specie_autostrada.pdf")
@@ -225,9 +217,16 @@ plot(n_specie_autostrada)
 dev.off()
 
 
-#facciamo uno scatterplot per vedere la distribuzione del tot species in funzione dell'estensione serbatoio espresso in mq
+#Facciamo uno scatterplot per vedere la distribuzione del tot species in funzione dell'estensione serbatoio espresso in mq
 scatter_plot <- plot(new_dataset_amph$tot_species, new_dataset_amph$estensione_serb_mq, 
-     xlab = "Estensione serbatoio (mq)", ylab = "Totale specie")
+                     xlab = "Estensione serbatoio (mq)", ylab = "Totale specie")
+
+#Il grafico mostra che ad estensioni di serbatoio basse corrispondono numeri di specie bassi, e a
+#estensioni di serbatoio alte corrispondono totali di specie alti. Per valori intermedi di estensione
+#il grafico tende, invece, ad associare ai valori più bassi di estensione totali di specie più alti, e a
+#estensioni alte totali di specie bassi; questo fenomeno probabilmente è imputabile alla presenza di altri fattori
+#che influenzano il numero di specie presenti in un serbatoio idrico oltre all'estensione di questo,
+#i quali per dimensioni inermedie dei serbatoi acquistano un peso maggiore dell'estensione nell'influenzare il totale di specie.
 
 #Salvo lo scatterplot
 pdf("scatterplot.pdf")
@@ -245,10 +244,10 @@ cor_pearson
 
 #Ora facciamo un grafico per vedere : specie e tipo di serbatoio
 ggplot(new_dataset_amph, aes(x = tipo_serbatoio, y = tot_species)) +
-      geom_col(position = "dodge", fill = "steelblue") +
-       stat_summary(fun = "mean", geom = "point", color = "red", size = 3) +
-       labs(x = "Tipo di serbatoio", y = "Media del numero di specie") +
-       ggtitle("Numero di specie per tipo di serbatoio")
+  geom_col(position = "dodge", fill = "steelblue") +
+  stat_summary(fun = "mean", geom = "point", color = "red", size = 3) +
+  labs(x = "Tipo di serbatoio", y = "Media del numero di specie") +
+  ggtitle("Numero di specie per tipo di serbatoio")
 
 #Dal grafico sembra che in diversi tipi di serbatoi siano presenti numeri diversi di specie. 
 #In particolare: 
@@ -272,22 +271,5 @@ kruskal.test(tot_species ~ tipo_serbatoio, data = new_dataset_amph)
 
 #Concludendo da quanto osservato nelle nostre analisi; possiamo affermare che è effettivamente presente 
 # una relazione tra le componenti biotiche (specie anfibi) e abiotiche (tipologia strada, tipo di serbatoio, distanza serbatoio-strade, estensione del serbatoio).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
