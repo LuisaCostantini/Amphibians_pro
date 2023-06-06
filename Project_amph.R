@@ -33,7 +33,7 @@ names(dataset_amph)
 
 glimpse(dataset_amph)
 
-#Di seguito sono elencate le categorie per ogni cariabile:
+#Di seguito sono elencate le categorie per ogni variabile:
 #Nella prima colonna ci sono le osservazioni, 
 #la seconda colonna è il tipo di strada/autostrada (fondamentale per la nostra analisi e che presenta due categorie, A1 ed S52),
 #la terza colonna rappresenta la superficie dei serbatoi in m2, ci sarà molto utile per la nostra analisi,
@@ -176,15 +176,15 @@ nomi <- c("green_frogs",
           "tree_frog",
           "common_newt",
           "great_crested_newt")
-df_secondario <- data.frame(occorrenza=valori, specie=nomi)
+df_secondario <- data.frame(Occorrenza=valori, Specie=nomi)
 
-specie_occorrenza <- ggplot(df_secondario, aes(x=specie, y=occorrenza)) + 
+specie_occorrenza <- ggplot(df_secondario, aes(x=Specie, y=Occorrenza)) + 
   geom_bar(stat = "identity")
 
 specie_occorrenza
 
 #Salviamo il barplot 
-pdf("specie_occorrenza.pdf")
+pdf("specie-occorrenza.pdf")
 plot(specie_occorrenza)
 dev.off()
 
@@ -213,9 +213,10 @@ dev.off()
 
 
 #Facciamo uno scatterplot per vedere la distribuzione del tot species in funzione dell'estensione serbatoio espresso in mq
-scatter_plot <- plot(new_dataset_amph$tot_species, new_dataset_amph$estensione_serb_mq, 
-                     xlab = "Estensione serbatoio (mq)", ylab = "Totale specie")
-
+scatter_plot <- ggplot(new_dataset_amph, aes(x=tot_species, y=estensione_serb_mq)) + geom_point() +
+  labs(x = "Tot Species",
+       y = "Estensione serbatoio (mq)")
+scatter_plot
 #Il grafico mostra che ad estensioni di serbatoio basse corrispondono numeri di specie bassi, e a
 #estensioni di serbatoio alte corrispondono totali di specie alti. Per valori intermedi di estensione
 #il grafico tende, invece, ad associare ai valori più bassi di estensione totali di specie più alti, e a
@@ -224,10 +225,9 @@ scatter_plot <- plot(new_dataset_amph$tot_species, new_dataset_amph$estensione_s
 #i quali per dimensioni inermedie dei serbatoi acquistano un peso maggiore dell'estensione nell'influenzare il totale di specie.
 
 #Salvo lo scatterplot
-pdf("scatterplot.pdf")
+pdf("scatter_plot.pdf")
 plot(scatter_plot)
 dev.off()
-
 
 #test di correlazione
 #Indaghiamo la possibile correlazione tra la grandezza dei serbatoi e il numero di specie presenti utilizzando il test di correlazione di pearson
@@ -238,12 +238,12 @@ cor_pearson
 #p-value = 0.002263, dobbiamo rifiutare l'ipotesi nulla, esiste una relazione lineare tra le variabili tot species e la grandezza del serbatoio
 
 #Ora facciamo un grafico per vedere : specie e tipo di serbatoio
-ggplot(new_dataset_amph, aes(x = tipo_serbatoio, y = tot_species)) +
-  geom_col(position = "dodge", fill = "steelblue") +
-  stat_summary(fun = "mean", geom = "point", color = "red", size = 3) +
-  labs(x = "Tipo di serbatoio", y = "Media del numero di specie") +
-  ggtitle("Numero di specie per tipo di serbatoio")
-
+tipo_serbatoio_media_numero_specie <- ggplot(new_dataset_amph, aes(x = tipo_serbatoio, y = tot_species)) +
+                                      geom_col(position = "dodge", fill = "steelblue") +
+                                      stat_summary(fun = "mean", geom = "point", color = "red", size = 3) +
+                                      labs(x = "Tipo di serbatoio", y = "Media del numero di specie") +
+                                      ggtitle("Numero di specie per tipo di serbatoio")
+tipo_serbatoio_media_numero_specie
 #Dal grafico sembra che in diversi tipi di serbatoi siano presenti numeri diversi di specie. 
 #In particolare: 
 #1 = serbatoio naturale, con media 3~ 
@@ -257,6 +257,11 @@ ggplot(new_dataset_amph, aes(x = tipo_serbatoio, y = tot_species)) +
 #A giudicare dai risultati assumiamo che le specie preferiscano serbatoio che si trovano in giardini/orti 
 # o in serbatoi naturali.
 
+#Salvo il plot
+pdf("tipo_serbatoio_media_numero_specie.pdf")
+plot(tipo_serbatoio_media_numero_specie)
+dev.off()
+
 #Studiamo questa relazione con un test di kruskal wallis
 kruskal.test(tot_species ~ tipo_serbatoio, data = new_dataset_amph)
 
@@ -266,4 +271,5 @@ kruskal.test(tot_species ~ tipo_serbatoio, data = new_dataset_amph)
 
 #Concludendo da quanto osservato nelle nostre analisi; possiamo affermare che è effettivamente presente 
 # una relazione tra le componenti biotiche (specie anfibi) e abiotiche (tipologia strada, tipo di serbatoio, distanza serbatoio-strade, estensione del serbatoio).
+
 
